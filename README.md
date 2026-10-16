@@ -33,25 +33,53 @@ Claude Code 的 [Skills](https://docs.claude.com/en/docs/claude-code/skills) 是
 
 ## 相关仓库
 
+- [`codex-skills`](https://github.com/wbx125133/codex-skills) — 面向 Codex 的产品、设计与内容技能合集。
 - [`AIPM-Vibecoding-Skill`](https://github.com/wbx125133/AIPM-Vibecoding-Skill) — `vibe-coding-prd` skill 单独发布在这个仓库（5 模块 + 17 项自查清单的 AI 可执行 PRD），未收录在本合集以避免重复。
 
+## 按任务选择
+
+| 当前任务 | 建议入口 |
+|---|---|
+| 判断方向值不值得做 | `brd-writing` |
+| 从用户反馈中提炼市场需求 | `mrd-writing` |
+| 给开发团队写正式需求 | `ai-agent-prd-writer` |
+| 写 AI 编程助手执行的项目规范 | `prd-writing`，或独立仓库中的 `vibe-coding-prd` |
+| 拆解产品、寻找产品机会 | `ai-product-teardown` / `product-insight-miner` |
+| 求职、学习与知识沉淀 | 面试 / 简历、学习、Obsidian 与长文共创技能 |
+
 ## 安装
+
+`brd` / `brd-writing`、`mrd` / `mrd-writing`、`prd-writing` / `vibe-prd-writer` 各组选一个即可，避免重复安装。同名技能已存在时先比较和备份。
 
 ### 全量安装
 
 ```bash
 git clone https://github.com/wbx125133/claude-skills.git
 cd claude-skills
-# 排除根级别的元文件，把所有 skill 目录拷过去
-for d in */; do cp -R "$d" ~/.claude/skills/; done
+mkdir -p "$HOME/.claude/skills"
+for source in */; do
+  [ -f "${source}SKILL.md" ] || continue
+  skill_name="${source%/}"
+  case "$skill_name" in brd|mrd|vibe-prd-writer) continue ;; esac
+  if [ -e "$HOME/.claude/skills/$skill_name" ] || [ -L "$HOME/.claude/skills/$skill_name" ]; then
+    printf '跳过已存在的 Skill：%s\n' "$skill_name"
+    continue
+  fi
+  cp -R "$source" "$HOME/.claude/skills/$skill_name"
+done
 ```
 
 ### 单个安装
 
 ```bash
 git clone https://github.com/wbx125133/claude-skills.git
-cp -R claude-skills/<skill-name> ~/.claude/skills/
+mkdir -p "$HOME/.claude/skills"
+if [ ! -e "$HOME/.claude/skills/brd-writing" ] && [ ! -L "$HOME/.claude/skills/brd-writing" ]; then
+  cp -R claude-skills/brd-writing "$HOME/.claude/skills/brd-writing"
+fi
 ```
+
+单个安装以 `brd-writing` 为例，选择其他技能时替换目录名。
 
 重启 Claude Code（或新开会话）后，skill 会根据 `SKILL.md` frontmatter 里的 `description` 自动判断何时触发，也可以用 `/<skill-name>` 显式调用。
 
